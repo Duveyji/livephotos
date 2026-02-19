@@ -117,27 +117,28 @@
             font-family: 'Dancing Script', cursive; font-size: 1.2rem;
             color: var(--deep); padding: 0 10px; text-align: center; user-select: none;
         }
-        .photo-card:nth-child(odd){transform:rotate(-5deg)}
-        .photo-card:nth-child(even){transform:rotate(3deg) translateY(-10px)}
-        .photo-card:hover { transform:rotate(0deg) scale(1.1) translateY(-8px)!important; z-index:50; box-shadow:8px 16px 40px rgba(44,31,31,0.24); }
+        .photo-card:nth-child(odd){transform:rotate(-4deg)}
+        .photo-card:nth-child(even){transform:rotate(2deg) translateY(-5px)}
+        .photo-card:hover { transform:rotate(0deg) scale(1.08) translateY(-8px)!important; z-index:50; box-shadow:8px 16px 40px rgba(44,31,31,0.24); }
 
         /* ── Lightbox ── */
-        .lightbox { position: fixed; inset: 0; background: rgba(12,6,6,0.93); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .lightbox { position: fixed; inset: 0; background: rgba(12,6,6,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .lightbox.open { display: flex; }
-        #lbImg { max-width: min(88vw, 880px); max-height: 82vh; object-fit: contain; background: var(--warm-white); padding: 12px 12px 48px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); display: block; user-select: none; animation: lbIn 0.25s ease; }
-        @keyframes lbIn { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
-        .lb-cap { position: absolute; bottom: 14px; left: 12px; right: 12px; font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: rgba(255,255,255,0.78); text-align: center; pointer-events: none; }
-        .lb-close { position: fixed; top: 18px; right: 22px; background: none; border: none; color: white; font-size: 2.4rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; z-index: 1002; line-height: 1; }
-        .lb-arrow { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: white; width: 52px; height: 52px; border-radius: 50%; font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 1002; }
-        #lbPrev{left:14px} #lbNext{right:14px}
-        .lb-counter { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.38); font-size: 0.76rem; letter-spacing: 0.2em; z-index: 1002; }
+        #lbImg { max-width: min(90vw, 900px); max-height: 80vh; object-fit: contain; background: var(--warm-white); padding: 10px 10px 45px; box-shadow: 0 30px 80px rgba(0,0,0,0.8); display: block; animation: lbIn 0.3s ease; }
+        @keyframes lbIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+        .lb-cap { position: absolute; bottom: 12px; left: 0; right: 0; font-family: 'Dancing Script', cursive; font-size: 1.4rem; color: var(--deep); text-align: center; }
+        .lb-close { position: fixed; top: 20px; right: 25px; background: none; border: none; color: white; font-size: 3rem; cursor: pointer; opacity: 0.7; transition: 0.2s; z-index: 1002; }
+        .lb-arrow { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 2rem; cursor: pointer; z-index: 1002; display: flex; align-items: center; justify-content: center; }
+        #lbPrev{left:20px} #lbNext{right:20px}
+        .lb-counter { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.5); font-size: 0.8rem; letter-spacing: 0.2em; }
 
-        footer { text-align: center; margin-top: 60px; font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: var(--rose); opacity: 0.55; }
+        footer { text-align: center; margin-top: 80px; font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: var(--rose); opacity: 0.6; padding-bottom: 40px; }
 
         @media (max-width: 680px) {
             .timeline::before { display: none; }
-            .photo-card { width: 155px; }
-            .photo-card img { height: 145px; }
+            .photo-card { width: 160px; padding: 10px 10px 40px; }
+            .photo-card img { height: 160px; }
+            .lb-arrow { width: 45px; height: 45px; font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -146,7 +147,7 @@
 <div class="page-title">
     <p class="sub">a collection of</p>
     <h1>Our Memories</h1>
-    <p class="sub">cherished moments</p>
+    <p class="sub">forever & always</p>
 </div>
 
 <div class="timeline" id="timeline"></div>
@@ -165,28 +166,29 @@
 
 <script>
 // ——— DATA CONFIGURATION ———
+// Using Relative Paths (since images are in the same folder as index.html)
 const DATES = [
     {
-        key: 'beginning',
-        label: 'The Beginning',
+        key: 'part-one',
+        label: 'The Journey Begins',
         valentine: false,
         photos: [
-            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/1.png', caption: 'First Moments' },
-            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/2.png', caption: 'Sweet Memories' }
+            { src: '1.png', caption: 'Special Moments' },
+            { src: '2.png', caption: 'The Sweetest Day' }
         ]
     },
     {
-        key: 'valentine-2026',
+        key: 'valentine-special',
         label: '14 February 2026 ♥',
         valentine: true,
         photos: [
-            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/3.png', caption: 'Valentine Gift' },
-            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/4.jpg', caption: 'Together Forever' }
+            { src: '3.png', caption: 'Valentine Surprise' },
+            { src: '4.jpg', caption: 'Together Forever' }
         ]
     }
 ];
 
-// ——— CORE LOGIC ———
+// ——— ENGINE ———
 let lbPhotos = [];
 let lbIdx = 0;
 
@@ -236,7 +238,8 @@ function closeLB() {
 
 function drawLB() {
     const p = lbPhotos[lbIdx];
-    document.getElementById('lbImg').src = p.src;
+    const img = document.getElementById('lbImg');
+    img.src = p.src;
     document.getElementById('lbCap').textContent = p.caption;
     document.getElementById('lbCounter').textContent = `${lbIdx + 1} / ${lbPhotos.length}`;
 }
@@ -247,9 +250,17 @@ function nav(delta) {
 }
 
 document.getElementById('lbClose').onclick = closeLB;
-document.getElementById('lbPrev').onclick = () => nav(-1);
-document.getElementById('lbNext').onclick = () => nav(1);
-document.getElementById('lightbox').onclick = (e) => { if(e.target.id === 'lightbox') closeLB(); };
+document.getElementById('lbPrev').onclick = (e) => { e.stopPropagation(); nav(-1); };
+document.getElementById('lbNext').onclick = (e) => { e.stopPropagation(); nav(1); };
+document.getElementById('lightbox').onclick = (e) => { if(e.target.id === 'lightbox' || e.target.id === 'lbClose') closeLB(); };
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') nav(-1);
+    if (e.key === 'ArrowRight') nav(1);
+    if (e.key === 'Escape') closeLB();
+});
 
 render();
 </script>
