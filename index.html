@@ -57,12 +57,6 @@
             opacity: 0; transform: translateY(28px);
             animation: fadeUp 0.65s ease forwards;
         }
-        .date-section:nth-child(1){animation-delay:.1s}
-        .date-section:nth-child(2){animation-delay:.22s}
-        .date-section:nth-child(3){animation-delay:.34s}
-        .date-section:nth-child(4){animation-delay:.46s}
-        .date-section:nth-child(5){animation-delay:.58s}
-        .date-section:nth-child(6){animation-delay:.70s}
         @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
 
         .date-badge {
@@ -123,9 +117,8 @@
             font-family: 'Dancing Script', cursive; font-size: 1.2rem;
             color: var(--deep); padding: 0 10px; text-align: center; user-select: none;
         }
-        .photo-card:nth-child(1){transform:rotate(-5deg)}
-        .photo-card:nth-child(2){transform:rotate(3deg) translateY(-10px)}
-        .photo-card:nth-child(3){transform:rotate(-2deg) translateY(8px)}
+        .photo-card:nth-child(odd){transform:rotate(-5deg)}
+        .photo-card:nth-child(even){transform:rotate(3deg) translateY(-10px)}
         .photo-card:hover { transform:rotate(0deg) scale(1.1) translateY(-8px)!important; z-index:50; box-shadow:8px 16px 40px rgba(44,31,31,0.24); }
 
         /* ── Lightbox ── */
@@ -133,23 +126,11 @@
         .lightbox.open { display: flex; }
         #lbImg { max-width: min(88vw, 880px); max-height: 82vh; object-fit: contain; background: var(--warm-white); padding: 12px 12px 48px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); display: block; user-select: none; animation: lbIn 0.25s ease; }
         @keyframes lbIn { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
-        #lbImg.zoomed   { cursor: grab; max-width: none; max-height: none; }
-        #lbImg.dragging { cursor: grabbing; }
         .lb-cap { position: absolute; bottom: 14px; left: 12px; right: 12px; font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: rgba(255,255,255,0.78); text-align: center; pointer-events: none; }
         .lb-close { position: fixed; top: 18px; right: 22px; background: none; border: none; color: white; font-size: 2.4rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; z-index: 1002; line-height: 1; }
-        .lb-close:hover { opacity: 1; }
         .lb-arrow { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: white; width: 52px; height: 52px; border-radius: 50%; font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 1002; }
-        .lb-arrow:hover { background: rgba(255,255,255,0.22); }
-        .lb-arrow:disabled { opacity: 0.15; pointer-events: none; }
         #lbPrev{left:14px} #lbNext{right:14px}
         .lb-counter { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.38); font-size: 0.76rem; letter-spacing: 0.2em; z-index: 1002; }
-        .lb-dots { position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 1002; max-width: 90vw; flex-wrap: wrap; justify-content: center; }
-        .lb-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; transition: background 0.2s, transform 0.2s; }
-        .lb-dot.on { background: var(--rose); transform: scale(1.35); }
-        .lb-zoom { position: fixed; bottom: 76px; right: 18px; display: flex; flex-direction: column; gap: 6px; z-index: 1002; }
-        .lb-zbtn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: white; width: 38px; height: 38px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .lb-zbtn:hover { background: rgba(255,255,255,0.24); }
-        .lb-zbtn.sm { font-size: 0.65rem; }
 
         footer { text-align: center; margin-top: 60px; font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: var(--rose); opacity: 0.55; }
 
@@ -157,9 +138,6 @@
             .timeline::before { display: none; }
             .photo-card { width: 155px; }
             .photo-card img { height: 145px; }
-            #lbImg { max-width: 95vw; padding: 8px 8px 40px; }
-            .lb-arrow { width: 38px; height: 38px; font-size: 1.1rem; }
-            #lbPrev{left:4px} #lbNext{right:4px}
         }
     </style>
 </head>
@@ -174,7 +152,6 @@
 <div class="timeline" id="timeline"></div>
 <footer>made with ♥</footer>
 
-<!-- Lightbox -->
 <div class="lightbox" id="lightbox">
     <button class="lb-close" id="lbClose">×</button>
     <button class="lb-arrow" id="lbPrev">‹</button>
@@ -183,106 +160,35 @@
         <img id="lbImg" src="" alt="">
         <div class="lb-cap" id="lbCap"></div>
     </div>
-    <div class="lb-dots"    id="lbDots"></div>
     <div class="lb-counter" id="lbCounter"></div>
-    <div class="lb-zoom">
-        <button class="lb-zbtn" id="lbZIn">+</button>
-        <button class="lb-zbtn" id="lbZOut">−</button>
-        <button class="lb-zbtn sm" id="lbZReset">1:1</button>
-    </div>
 </div>
 
 <script>
-// ╔══════════════════════════════════════════════════════════════════════╗
-// ║                  📸 ADD YOUR PHOTOS HERE                           ║
-// ║                                                                    ║
-// ║  Replace the photo URLs below with your own GitHub image URLs.     ║
-// ║                                                                    ║
-// ║  HOW TO GET THE URL:                                               ║
-// ║  1. Upload photo to GitHub repo in the /photos/ folder             ║
-// ║  2. Click the photo → click "Raw" button                           ║
-// ║  3. Copy the URL from the browser bar                              ║
-// ║     It looks like:                                                 ║
-// ║     https://raw.githubusercontent.com/YOU/memories/main/photos/x.jpg ║
-// ║                                                                    ║
-// ║  Set src: "" (empty string) to hide a slot.                        ║
-// ╚══════════════════════════════════════════════════════════════════════╝
-
+// ——— DATA CONFIGURATION ———
 const DATES = [
-
     {
-        key:       'dec05-2025',
-        label:     '05 December 2025',
+        key: 'beginning',
+        label: 'The Beginning',
         valentine: false,
         photos: [
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec05-1.jpg', caption: 'First Snow Walk' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec05-2.jpg', caption: 'Hot Cocoa Morning' },
-            // add or remove lines here for more/fewer photos
+            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/1.png', caption: 'First Moments' },
+            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/2.png', caption: 'Sweet Memories' }
         ]
     },
-
     {
-        key:       'dec24-2025',
-        label:     '24 December 2025',
-        valentine: false,
-        photos: [
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec24-1.jpg', caption: 'Christmas Eve Magic' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec24-2.jpg', caption: 'Unwrapping Together' },
-        ]
-    },
-
-    {
-        key:       'dec29-2025',
-        label:     '29 December 2025',
-        valentine: false,
-        photos: [
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec29-1.jpg', caption: 'Mountain Escape' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec29-2.jpg', caption: 'Winter Hike' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/dec29-3.jpg', caption: 'Mountaintop Views' },
-        ]
-    },
-
-    {
-        key:       'jan26-2026',
-        label:     '26 January 2026',
-        valentine: false,
-        photos: [
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/jan26-1.jpg', caption: 'The Coffee Date' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/jan26-2.jpg', caption: 'Dinner for Two' },
-        ]
-    },
-
-    {
-        key:       'feb14-2026',
-        label:     '14 February 2026 ♥',
+        key: 'valentine-2026',
+        label: '14 February 2026 ♥',
         valentine: true,
         photos: [
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/feb14-1.jpg', caption: 'Roses & Candlelight' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/feb14-2.jpg', caption: 'Sweet Surprise' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/feb14-3.jpg', caption: 'Our Favourite Walk' },
+            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/3.png', caption: 'Valentine Gift' },
+            { src: 'https://raw.githubusercontent.com/Duveyji/memories/main/4.jpg', caption: 'Together Forever' }
         ]
-    },
-
-    {
-        key:       'feb18-2026',
-        label:     '18 February 2026',
-        valentine: false,
-        photos: [
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/feb18-1.jpg', caption: 'Beach Day' },
-            { src: 'https://raw.githubusercontent.com/YOUR-USERNAME/memories/main/photos/feb18-2.jpg', caption: 'Golden Sunset' },
-        ]
-    },
-
+    }
 ];
 
-// ══════════════════════════════════════════════════════════════════════
-//  DO NOT EDIT BELOW THIS LINE
-// ══════════════════════════════════════════════════════════════════════
-
+// ——— CORE LOGIC ———
 let lbPhotos = [];
-let lbIdx    = 0;
-let zoom     = 1;
-let drag     = { on:false, sx:0, sy:0, ox:0, oy:0, tx:0, ty:0 };
+let lbIdx = 0;
 
 function render() {
     const tl = document.getElementById('timeline');
@@ -290,15 +196,12 @@ function render() {
     lbPhotos = [];
 
     DATES.forEach((d, di) => {
-        // filter out empty src
-        const photos = (d.photos || []).filter(p => p.src && p.src.trim() !== '');
-        photos.forEach(p => lbPhotos.push({ ...p }));
-
-        if (photos.length === 0) return; // skip dates with no photos
+        const photos = d.photos.filter(p => p.src);
+        photos.forEach(p => lbPhotos.push(p));
 
         const sec = document.createElement('div');
         sec.className = 'date-section' + (d.valentine ? ' valentine' : '');
-        sec.style.animationDelay = (0.1 + di * 0.14) + 's';
+        sec.style.animationDelay = (0.1 + di * 0.2) + 's';
         sec.innerHTML = `<div class="date-badge"><div class="dot"></div><div class="label">${d.label}</div></div>`;
 
         const row = document.createElement('div');
@@ -308,11 +211,9 @@ function render() {
         photos.forEach((photo, pi) => {
             const card = document.createElement('div');
             card.className = 'photo-card';
-            card.innerHTML = `
-                <img src="${photo.src}" alt="${photo.caption}" loading="lazy">
-                <div class="caption">${photo.caption}</div>`;
+            card.innerHTML = `<img src="${photo.src}" alt="${photo.caption}"><div class="caption">${photo.caption}</div>`;
             const idx = globalStart + pi;
-            card.addEventListener('click', () => openLB(idx));
+            card.onclick = () => openLB(idx);
             row.appendChild(card);
         });
 
@@ -321,103 +222,34 @@ function render() {
     });
 }
 
-// ── Lightbox ──────────────────────────────────────────────────────────
 function openLB(idx) {
-    if (!lbPhotos.length) return;
-    lbIdx = idx; zoom = 1; resetDrag();
+    lbIdx = idx;
     document.getElementById('lightbox').classList.add('open');
     document.body.style.overflow = 'hidden';
     drawLB();
 }
+
 function closeLB() {
     document.getElementById('lightbox').classList.remove('open');
     document.body.style.overflow = '';
-    zoom = 1; resetDrag(); applyZoom();
 }
+
 function drawLB() {
     const p = lbPhotos[lbIdx];
-    const img = document.getElementById('lbImg');
-    img.src = p.src; img.alt = p.caption;
-    img.className = ''; img.style.transform = '';
-    zoom = 1; resetDrag();
-    document.getElementById('lbCap').textContent    = p.caption;
-    document.getElementById('lbPrev').disabled       = lbIdx === 0;
-    document.getElementById('lbNext').disabled       = lbIdx === lbPhotos.length - 1;
-    document.getElementById('lbCounter').textContent = `${lbIdx+1} / ${lbPhotos.length}`;
-    const dotsEl = document.getElementById('lbDots');
-    dotsEl.innerHTML = '';
-    if (lbPhotos.length <= 20) {
-        lbPhotos.forEach((_, i) => {
-            const d = document.createElement('div');
-            d.className = 'lb-dot' + (i === lbIdx ? ' on' : '');
-            d.addEventListener('click', () => { lbIdx = i; drawLB(); });
-            dotsEl.appendChild(d);
-        });
-    }
+    document.getElementById('lbImg').src = p.src;
+    document.getElementById('lbCap').textContent = p.caption;
+    document.getElementById('lbCounter').textContent = `${lbIdx + 1} / ${lbPhotos.length}`;
 }
+
 function nav(delta) {
-    const n = lbIdx + delta;
-    if (n >= 0 && n < lbPhotos.length) { lbIdx = n; drawLB(); }
+    lbIdx = (lbIdx + delta + lbPhotos.length) % lbPhotos.length;
+    drawLB();
 }
-function setZoom(z) {
-    zoom = Math.max(1, Math.min(6, z));
-    if (zoom === 1) resetDrag();
-    applyZoom();
-}
-function applyZoom() {
-    const img = document.getElementById('lbImg');
-    if (zoom <= 1) { img.className=''; img.style.transform='scale(1)'; }
-    else { img.classList.add('zoomed'); img.style.transform=`scale(${zoom}) translate(${drag.tx}px,${drag.ty}px)`; }
-}
-function resetDrag() { drag={on:false,sx:0,sy:0,ox:0,oy:0,tx:0,ty:0}; }
 
-document.getElementById('lbClose').onclick  = closeLB;
-document.getElementById('lbPrev').onclick   = () => nav(-1);
-document.getElementById('lbNext').onclick   = () => nav(1);
-document.getElementById('lbZIn').onclick    = () => setZoom(zoom+0.6);
-document.getElementById('lbZOut').onclick   = () => setZoom(zoom-0.6);
-document.getElementById('lbZReset').onclick = () => setZoom(1);
-document.getElementById('lightbox').addEventListener('click', e => { if (e.target===document.getElementById('lightbox')) closeLB(); });
-
-document.addEventListener('keydown', e => {
-    if (!document.getElementById('lightbox').classList.contains('open')) return;
-    if (e.key==='Escape')           closeLB();
-    if (e.key==='ArrowLeft')        nav(-1);
-    if (e.key==='ArrowRight')       nav(1);
-    if (e.key==='+'||e.key==='=')   setZoom(zoom+0.6);
-    if (e.key==='-')                setZoom(zoom-0.6);
-    if (e.key==='0')                setZoom(1);
-});
-document.getElementById('lightbox').addEventListener('wheel', e => {
-    e.preventDefault(); setZoom(zoom+(e.deltaY<0?0.3:-0.3));
-}, {passive:false});
-document.getElementById('lbImg').addEventListener('dblclick', () => setZoom(zoom>1?1:2.5));
-
-const lbImgEl = document.getElementById('lbImg');
-lbImgEl.addEventListener('mousedown', e => {
-    if (zoom<=1) return; e.preventDefault();
-    drag.on=true; drag.sx=e.clientX; drag.sy=e.clientY; drag.ox=drag.tx; drag.oy=drag.ty;
-    lbImgEl.classList.add('dragging');
-});
-document.addEventListener('mousemove', e => {
-    if (!drag.on) return;
-    drag.tx=drag.ox+(e.clientX-drag.sx)/zoom; drag.ty=drag.oy+(e.clientY-drag.sy)/zoom; applyZoom();
-});
-document.addEventListener('mouseup', () => { drag.on=false; lbImgEl.classList.remove('dragging'); });
-
-let tx0=0;
-document.getElementById('lightbox').addEventListener('touchstart', e=>{tx0=e.touches[0].clientX;},{passive:true});
-document.getElementById('lightbox').addEventListener('touchend', e=>{
-    const dx=e.changedTouches[0].clientX-tx0;
-    if(Math.abs(dx)>50&&zoom<=1) nav(dx<0?1:-1);
-},{passive:true});
-let pinchD=0;
-document.getElementById('lightbox').addEventListener('touchmove', e=>{
-    if(e.touches.length!==2) return; e.preventDefault();
-    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    if(pinchD) setZoom(zoom*d/pinchD); pinchD=d;
-},{passive:false});
-document.getElementById('lightbox').addEventListener('touchend',()=>{pinchD=0;});
+document.getElementById('lbClose').onclick = closeLB;
+document.getElementById('lbPrev').onclick = () => nav(-1);
+document.getElementById('lbNext').onclick = () => nav(1);
+document.getElementById('lightbox').onclick = (e) => { if(e.target.id === 'lightbox') closeLB(); };
 
 render();
 </script>
