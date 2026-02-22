@@ -1,0 +1,736 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubey Ji, Lucky Wheel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  font-family: 'Ubuntu', sans-serif;
+  background: radial-gradient(circle at top, #4c1d95, #1e1b4b, #0f172a);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+.glass {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(255, 215, 0, 0.1);
+}
+
+#wheel {
+  transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+
+.pointer {
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 40px solid #fbbf24;
+  margin: auto;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: red;
+  top: -10px;
+  animation: fall 3s linear forwards;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.winner-announcement {
+  animation: pulse 0.5s ease-in-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.history-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #64748b;
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #3b82f6;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+@media (max-width: 640px) {
+  #wheel {
+    width: 280px;
+    height: 280px;
+  }
+}
+</style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center text-white p-4">
+
+<div class="w-full max-w-6xl">
+  <h1 class="text-4xl font-bold mb-2 text-center">🎡 Dubey Ji, Lucky Wheel 🌟</h1>
+  <p class="text-center text-gray-400 mb-2">✨ Your Personal Fortune Spinner ✨</p>
+  <p class="text-center text-yellow-400 text-sm mb-6">Made with ❤️ by Dubey Ji</p>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    
+    <!-- Wheel Section -->
+    <div class="glass p-6 rounded-3xl shadow-2xl text-center">
+      <div class="pointer mb-2"></div>
+      <canvas id="wheel" width="320" height="320" class="bg-white rounded-full mx-auto shadow-xl" role="img" aria-label="Lucky wheel"></canvas>
+
+      <div class="mt-6 space-y-2">
+        <button id="spinBtn" onclick="spinWheel()" 
+          class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition w-full font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Spin the wheel">
+          🎲 Spin the Wheel
+        </button>
+
+        <button onclick="resetWheel()" 
+          class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-3 rounded-xl hover:from-red-600 hover:to-red-700 transition w-full font-semibold shadow-lg"
+          aria-label="Reset all entries">
+          🔄 Reset All
+        </button>
+      </div>
+
+      <div id="winner" class="mt-4 text-xl font-bold min-h-[60px] flex items-center justify-center"></div>
+
+      <!-- Settings -->
+      <div class="mt-6 p-4 bg-white/5 rounded-xl">
+        <div class="flex items-center justify-between mb-2">
+          <label for="autoRemove" class="text-sm">Auto-remove winner</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoRemove" checked onchange="saveSettings()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="flex items-center justify-between">
+          <label for="showConfetti" class="text-sm">Show confetti</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="showConfetti" checked onchange="saveSettings()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Entries & History Section -->
+    <div class="space-y-6">
+      
+      <!-- Add Entry -->
+      <div class="glass p-6 rounded-3xl shadow-2xl">
+        <h2 class="text-xl font-bold mb-4">📝 Add Entries</h2>
+        
+        <div class="flex gap-2 mb-4">
+          <input id="newEntry" type="text" placeholder="Enter a lucky name... 🍀" maxlength="30"
+            class="flex-1 p-3 rounded-lg text-black bg-white/90 placeholder-gray-500 font-medium"
+            onkeypress="if(event.key==='Enter')addEntry()"
+            aria-label="Entry name input">
+          
+          <button onclick="addEntry()" 
+            class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition font-semibold shadow-lg whitespace-nowrap"
+            aria-label="Add entry">
+            ➕ Add
+          </button>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+          <button onclick="addMultipleEntries()" 
+            class="flex-1 bg-purple-500 px-4 py-2 rounded-lg hover:bg-purple-600 transition text-sm"
+            aria-label="Add multiple entries at once">
+            Add Multiple
+          </button>
+          <button onclick="exportEntries()" 
+            class="flex-1 bg-indigo-500 px-4 py-2 rounded-lg hover:bg-indigo-600 transition text-sm"
+            aria-label="Export entries">
+            📤 Export
+          </button>
+          <button onclick="importEntries()" 
+            class="flex-1 bg-indigo-500 px-4 py-2 rounded-lg hover:bg-indigo-600 transition text-sm"
+            aria-label="Import entries">
+            📥 Import
+          </button>
+        </div>
+
+        <div class="mb-2 text-sm text-gray-400">
+          Current entries: <span id="entryCount" class="font-bold text-white">0</span> / 20
+        </div>
+
+        <ul id="entryList" class="space-y-2 max-h-64 overflow-y-auto"></ul>
+      </div>
+
+      <!-- Winner History -->
+      <div class="glass p-6 rounded-3xl shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold">🏆 Winner History</h2>
+          <button onclick="clearHistory()" 
+            class="text-sm text-red-400 hover:text-red-300 transition"
+            aria-label="Clear winner history">
+            Clear
+          </button>
+        </div>
+        <ul id="historyList" class="space-y-2 max-h-48 overflow-y-auto text-sm">
+          <li class="text-gray-400 italic">No winners yet</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="mt-8 text-center text-gray-400 text-sm">
+  <p>🙏 Thank you for using lucky Wheel 🙏</p>
+  <p class="mt-1">May luck always be on your side! ✨</p>
+</div>
+
+<script>
+// State management
+const state = {
+  entries: [],
+  winners: [],
+  currentRotation: 0,
+  isSpinning: false,
+  settings: {
+    autoRemove: true,
+    showConfetti: true
+  }
+};
+
+// DOM elements
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const winnerText = document.getElementById("winner");
+const spinBtn = document.getElementById("spinBtn");
+const entryInput = document.getElementById("newEntry");
+
+// Color palette for wheel segments
+const colors = [
+  '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+  '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+  '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+  '#ec4899', '#f43f5e'
+];
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  drawWheel();
+  updateUI();
+  
+  // Show welcome message
+  setTimeout(() => {
+    if (state.entries.length === 0 && state.winners.length === 0) {
+      showNotification('🙏 Welcome to Dubey Ji\'s Lucky Wheel! 🎡', 'success');
+    }
+  }, 500);
+});
+
+// Save state to localStorage
+function saveState() {
+  localStorage.setItem('dubeyJiLuckyWheel', JSON.stringify({
+    entries: state.entries,
+    winners: state.winners,
+    settings: state.settings
+  }));
+}
+
+// Load state from localStorage
+function loadState() {
+  try {
+    const saved = localStorage.getItem('dubeyJiLuckyWheel');
+    if (saved) {
+      const data = JSON.parse(saved);
+      state.entries = data.entries || [];
+      state.winners = data.winners || [];
+      state.settings = data.settings || state.settings;
+      
+      // Update settings UI
+      document.getElementById('autoRemove').checked = state.settings.autoRemove;
+      document.getElementById('showConfetti').checked = state.settings.showConfetti;
+    }
+  } catch (e) {
+    console.error('Failed to load state:', e);
+  }
+}
+
+// Save settings
+function saveSettings() {
+  state.settings.autoRemove = document.getElementById('autoRemove').checked;
+  state.settings.showConfetti = document.getElementById('showConfetti').checked;
+  saveState();
+}
+
+// Draw wheel
+function drawWheel() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  if (state.entries.length === 0) {
+    // Draw empty state
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = 'bold 16px Ubuntu';
+    ctx.textAlign = 'center';
+    ctx.fillText('🙏 Dubey Ji welcomes you!', 160, 150);
+    ctx.font = '14px Ubuntu';
+    ctx.fillText('Add entries to begin', 160, 175);
+    return;
+  }
+
+  const arc = (2 * Math.PI) / state.entries.length;
+  
+  state.entries.forEach((text, i) => {
+    const angle = i * arc;
+    
+    // Draw segment
+    ctx.beginPath();
+    ctx.moveTo(160, 160);
+    ctx.arc(160, 160, 160, angle, angle + arc);
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw text
+    ctx.save();
+    ctx.translate(160, 160);
+    ctx.rotate(angle + arc / 2);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px Ubuntu';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 3;
+    ctx.fillText(text.length > 15 ? text.substring(0, 15) + '...' : text, 70, 5);
+    ctx.restore();
+  });
+  
+  // Draw center circle
+  ctx.beginPath();
+  ctx.arc(160, 160, 25, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1e293b';
+  ctx.fill();
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  
+  // Add initials
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 16px Ubuntu';
+  ctx.textAlign = 'center';
+  ctx.fillText('DJ', 160, 167);
+}
+
+// Add entry
+function addEntry() {
+  const value = entryInput.value.trim();
+  
+  if (!value) {
+    showNotification('Please enter a valid name', 'error');
+    return;
+  }
+  
+  if (state.entries.includes(value)) {
+    showNotification('This entry already exists', 'error');
+    return;
+  }
+  
+  if (state.entries.length >= 20) {
+    showNotification('Maximum 20 entries allowed', 'error');
+    return;
+  }
+  
+  state.entries.push(value);
+  entryInput.value = "";
+  
+  saveState();
+  updateUI();
+  drawWheel();
+  
+  showNotification('✨ Added "' + value + '" successfully!', 'success');
+}
+
+// Remove entry
+function removeEntry(index) {
+  const removed = state.entries.splice(index, 1)[0];
+  saveState();
+  updateUI();
+  drawWheel();
+  showNotification('Removed "' + removed + '"', 'info');
+}
+
+// Update UI
+function updateUI() {
+  updateEntryList();
+  updateHistoryList();
+  updateEntryCount();
+}
+
+// Update entry list
+function updateEntryList() {
+  const list = document.getElementById("entryList");
+  
+  if (state.entries.length === 0) {
+    list.innerHTML = '<li class="text-gray-400 italic text-center py-4">No entries yet</li>';
+    return;
+  }
+  
+  list.innerHTML = "";
+  state.entries.forEach((entry, index) => {
+    const li = document.createElement("li");
+    li.className = "flex justify-between items-center p-3 bg-white/10 rounded-lg hover:bg-white/20 transition fade-in";
+    li.innerHTML = '<span class="font-medium truncate">' + entry + '</span><button onclick="removeEntry(' + index + ')" class="ml-2 text-red-400 hover:text-red-300 transition font-bold text-lg" aria-label="Remove ' + entry + '">✕</button>';
+    list.appendChild(li);
+  });
+}
+
+// Update history list
+function updateHistoryList() {
+  const list = document.getElementById("historyList");
+  
+  if (state.winners.length === 0) {
+    list.innerHTML = '<li class="text-gray-400 italic">No winners yet</li>';
+    return;
+  }
+  
+  list.innerHTML = "";
+  state.winners.slice().reverse().forEach((winner, index) => {
+    const li = document.createElement("li");
+    li.className = "flex justify-between items-center p-2 bg-white/10 rounded-lg history-item";
+    const date = new Date(winner.timestamp);
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    li.innerHTML = '<span class="font-medium">🏆 ' + winner.name + '</span><span class="text-xs text-gray-400">' + timeStr + '</span>';
+    list.appendChild(li);
+  });
+}
+
+// Update entry count
+function updateEntryCount() {
+  document.getElementById('entryCount').textContent = state.entries.length;
+}
+
+// Spin wheel - FIXED LOGIC
+function spinWheel() {
+  if (state.entries.length < 2) {
+    showNotification('Add at least 2 entries to spin', 'error');
+    return;
+  }
+  
+  if (state.isSpinning) return;
+  
+  state.isSpinning = true;
+  spinBtn.disabled = true;
+  winnerText.innerHTML = '';
+  
+  // Random winner selection
+  const randomIndex = Math.floor(Math.random() * state.entries.length);
+  const arc = 360 / state.entries.length;
+  
+  // Calculate segment center position (in degrees)
+  const segmentCenter = randomIndex * arc + arc / 2;
+  
+  // Calculate current position of this segment on screen
+  const currentScreenAngle = (segmentCenter + state.currentRotation) % 360;
+  
+  // Pointer is at 270 degrees (12 o'clock position)
+  // Calculate how much rotation needed to align segment with pointer
+  let rotationNeeded = 270 - currentScreenAngle;
+  if (rotationNeeded < 0) rotationNeeded += 360;
+  
+  // Add 6 full rotations for spinning effect
+  const spinDegrees = rotationNeeded + 360 * 6;
+  
+  state.currentRotation += spinDegrees;
+  canvas.style.transform = 'rotate(' + state.currentRotation + 'deg)';
+  
+  // After spin completes
+  setTimeout(() => {
+    const winner = state.entries[randomIndex];
+    
+    // Add to history
+    state.winners.push({
+      name: winner,
+      timestamp: Date.now()
+    });
+    
+    // Show winner
+    winnerText.innerHTML = '<div class="winner-announcement bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-xl"><div class="text-2xl mb-2">🎉 🎊 🎉</div><div class="text-lg">Dubey Ji announces...</div><div class="text-2xl font-bold mt-2">🏆 ' + winner + ' 🏆</div><div class="text-sm mt-2">Congratulations! 🌟</div></div>';
+    
+    // Confetti
+    if (state.settings.showConfetti) {
+      createConfetti();
+    }
+    
+    // Auto-remove winner
+    if (state.settings.autoRemove) {
+      state.entries.splice(randomIndex, 1);
+    }
+    
+    saveState();
+    updateUI();
+    
+    // Redraw wheel after small delay
+    setTimeout(() => {
+      drawWheel();
+      state.isSpinning = false;
+      spinBtn.disabled = false;
+    }, 1000);
+    
+  }, 5000);
+}
+
+// Reset wheel
+function resetWheel() {
+  if (!confirm('🙏 Are you sure you want to reset all entries? This cannot be undone!')) return;
+  
+  state.entries = [];
+  state.currentRotation = 0;
+  canvas.style.transform = "rotate(0deg)";
+  winnerText.innerHTML = "";
+  
+  saveState();
+  updateUI();
+  drawWheel();
+  
+  showNotification('🔄 Wheel reset! Ready for a fresh start!', 'info');
+}
+
+// Clear history
+function clearHistory() {
+  if (!confirm('🙏 Clear all winner history? Dubey Ji will miss these memories!')) return;
+  
+  state.winners = [];
+  saveState();
+  updateHistoryList();
+  showNotification('📜 History cleared - Fresh start!', 'info');
+}
+
+// Create confetti
+function createConfetti() {
+  const confettiCount = 60;
+  const confettiColors = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+  
+  for (let i = 0; i < confettiCount; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement("div");
+      confetti.className = "confetti";
+      confetti.style.left = Math.random() * 100 + "vw";
+      confetti.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      confetti.style.animationDuration = (2 + Math.random() * 2) + "s";
+      confetti.style.animationDelay = (Math.random() * 0.5) + "s";
+      confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      document.body.appendChild(confetti);
+      
+      setTimeout(() => confetti.remove(), 4000);
+    }, i * 20);
+  }
+}
+
+// Show notification
+function showNotification(message, type) {
+  type = type || 'info';
+  const notification = document.createElement('div');
+  notification.className = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-semibold z-50 fade-in';
+  
+  const bgColors = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500'
+  };
+  
+  notification.classList.add(bgColors[type] || bgColors.info);
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100px)';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Add multiple entries
+function addMultipleEntries() {
+  const input = prompt('🎯 Dubey Ji says: Enter multiple lucky names separated by commas!\n\nExample: Rahul, Priya, Amit, Sneha');
+  if (!input) return;
+  
+  const names = input.split(',')
+    .map(name => name.trim())
+    .filter(name => name.length > 0 && !state.entries.includes(name));
+  
+  if (names.length === 0) {
+    showNotification('No valid entries to add', 'error');
+    return;
+  }
+  
+  if (state.entries.length + names.length > 20) {
+    showNotification('Can only add ' + (20 - state.entries.length) + ' more entries', 'error');
+    return;
+  }
+  
+  state.entries.push(...names);
+  saveState();
+  updateUI();
+  drawWheel();
+  
+  showNotification('Added ' + names.length + ' entries', 'success');
+}
+
+// Export entries
+function exportEntries() {
+  if (state.entries.length === 0) {
+    showNotification('No entries to export', 'error');
+    return;
+  }
+  
+  const data = state.entries.join('\n');
+  const blob = new Blob([data], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dubey-ji-lucky-wheel-' + Date.now() + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showNotification('Entries exported', 'success');
+}
+
+// Import entries
+function importEntries() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.txt';
+  
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target.result;
+      const names = text.split('\n')
+        .map(name => name.trim())
+        .filter(name => name.length > 0 && !state.entries.includes(name));
+      
+      if (names.length === 0) {
+        showNotification('No valid entries found', 'error');
+        return;
+      }
+      
+      if (state.entries.length + names.length > 20) {
+        showNotification('Can only add ' + (20 - state.entries.length) + ' more entries', 'error');
+        return;
+      }
+      
+      state.entries.push(...names);
+      saveState();
+      updateUI();
+      drawWheel();
+      
+      showNotification('🎉 Dubey Ji imported ' + names.length + ' entries!', 'success');
+    };
+    
+    reader.readAsText(file);
+  };
+  
+  input.click();
+}
+
+// Focus input on load
+entryInput.focus();
+</script>
+
+</body>
+</html>
