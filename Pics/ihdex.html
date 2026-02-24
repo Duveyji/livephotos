@@ -62,14 +62,15 @@
     }
     #overlay.bye { opacity: 0; transform: translateY(-100%); pointer-events: none; }
 
-    #theme-pill {
+    /* Theme pill — only in lock screen */
+    #theme-pill-lock {
       position: absolute; top: 20px; right: 20px;
       width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
       background: var(--surface); border: 1px solid var(--border); border-radius: 50%;
       cursor: pointer; box-shadow: 0 2px 12px var(--shadow);
       transition: background 0.4s, transform 0.3s; user-select: none; font-size: 18px;
     }
-    #theme-pill:hover { transform: rotate(20deg) scale(1.08); }
+    #theme-pill-lock:hover { transform: rotate(20deg) scale(1.08); }
 
     #lock-card {
       width: 100%; max-width: 340px;
@@ -96,6 +97,50 @@
     .key.del    { color: var(--rose); }
     .key.empty  { visibility: hidden; pointer-events: none; }
     #err { font-size: 12px; color: var(--rose); margin-top: 16px; opacity: 0; transition: opacity 0.3s; min-height: 16px; text-align: center; }
+
+    /* ══ TOP ACTION BAR (above filter, gallery only) ══ */
+    #side-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease 0.3s;
+      justify-content: flex-end;
+    }
+    #side-actions.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .side-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      box-shadow: 0 2px 12px var(--shadow);
+      color: var(--text-2);
+      font-size: 17px;
+      transition: background 0.22s, border-color 0.22s, color 0.22s, transform 0.18s, box-shadow 0.22s;
+      user-select: none;
+    }
+    .side-btn:hover {
+      background: var(--rose);
+      border-color: var(--rose);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(232,82,106,0.28);
+    }
+    .side-btn:active { transform: scale(0.96); }
+
+    /* Fullscreen active state */
+    body.is-fullscreen #btn-fullscreen { background: var(--rose-dim); border-color: var(--rose); color: var(--rose); }
 
     /* ══ MAIN ══ */
     #main { position: relative; z-index: 10; max-width: 1160px; margin: 0 auto; padding: 80px 24px 60px; }
@@ -160,6 +205,8 @@
     @media (max-width: 700px) {
       #gallery { grid-template-columns: 1fr; }
       .g-item { grid-column: span 1 !important; margin-top: 0 !important; }
+      #side-actions { right: 12px; }
+      .side-btn { width: 38px; height: 38px; border-radius: 12px; }
     }
 
     .g-img-wrap { position: relative; overflow: hidden; border-radius: 22px; }
@@ -265,7 +312,7 @@
 
   <!-- LOCK SCREEN -->
   <div id="overlay">
-    <button id="theme-pill" onclick="toggleNight()"><span id="pill-icon">☀️</span></button>
+    <button id="theme-pill-lock" onclick="toggleNight()"><span id="pill-icon-lock">☀️</span></button>
     <div id="lock-card">
       <div class="lock-icon-wrap">
         <i data-lucide="lock" style="color:var(--rose);width:24px;height:24px;"></i>
@@ -300,7 +347,17 @@
   <!-- MAIN GALLERY -->
   <div id="main">
     <header class="reveal">
-      <div class="badge">Unlocked Memory Box</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <div class="badge" style="margin-bottom:0;">Unlocked Memory Box</div>
+        <div id="side-actions" style="margin-bottom:0;">
+          <button class="side-btn" id="btn-theme" onclick="toggleNight()">
+            <span id="pill-icon-gallery">☀️</span>
+          </button>
+          <button class="side-btn" id="btn-fullscreen" onclick="toggleFullscreen()">
+            <i data-lucide="maximize-2" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+      </div>
       <h1 class="hero-title">Beautiful <em>moments</em>.</h1>
     </header>
 
@@ -390,8 +447,10 @@
    location – City / place name (used in filter)
    images   – Array of image URLs
 
- ⭐ Entries with the SAME date + location are
-    AUTO-GROUPED into one card automatically.
+ ⭐ AUTO-GROUPING RULE:
+    Entries with the SAME title + date + location are
+    merged into one card.
+    → Different titles = SEPARATE cards (even if same date + location)
 
  GITHUB RAW URL:
    https://raw.githubusercontent.com/USER/REPO/main/Pics/FILE.jpg
@@ -415,12 +474,17 @@ const PHOTOS = [
   },
 
   // ── JAN 2026 ──────────────────────────────────────────
-   {
+  {
     title:    "Dwarkadhish Mandir – Virar",
     date:     "23 Jan 2026",
     location: "Virar",
-    images:   [ BASE + "15.jpg", BASE + "15a.jpg", BASE + "15b.jpg",BASE + "15c.jpg" ]
-    // ↑ same date+location as above → auto-merged into one card
+    images:   [ BASE + "15.jpg", BASE + "15a.jpg", BASE + "15b.jpg" ]
+  },
+  {
+    title:    "The Jivdani Temple",
+    date:     "23 Jan 2026",
+    location: "Virar",
+    images:   [ BASE + "15c.jpg" ]
   },
   {
     title:    "Domino's Pizza in Virar",
@@ -428,21 +492,18 @@ const PHOTOS = [
     location: "Virar",
     images:   [ BASE + "16.jpg", BASE + "16a.jpg" ]
   },
-  
-     {
+  {
     title:    "Miraj Dattani - Movie",
     date:     "26 Jan 2026",
     location: "Vasai",
     images:   [ BASE + "11.jpeg", BASE + "11a.jpeg" ]
-    // ↑ same date+location as above → auto-merged into one card
   },
   {
     title:    "The Jivdani Temple",
     date:     "29 Jan 2026",
     location: "Virar",
-    images:   [ BASE + "17.jpeg", BASE + "17a.jpg", BASE + "17b.jpg"]
+    images:   [ BASE + "17.jpeg", BASE + "17a.jpg", BASE + "17b.jpg" ]
   },
-  
   {
     title:    "Hall Ticket",
     date:     "14 Feb 2026",
@@ -453,7 +514,7 @@ const PHOTOS = [
     title:    "Deep Education Campus",
     date:     "18 Feb 2026",
     location: "Boisar",
-    images:   [ BASE + "19.jpg",  BASE + "19a.jpg"]
+    images:   [ BASE + "19.jpg", BASE + "19a.jpg" ]
   },
   {
     title:    "No Touch Day",
@@ -469,11 +530,18 @@ const PHOTOS = [
   },
 
   // ── ADD NEW ENTRIES BELOW ──────────────────────────────
+  // Example: two different temples on the SAME date+location → separate cards ✓
   // {
-  //   title:    "Your Moment Title",
-  //   date:     "DD Mon YYYY",         // e.g. "25 Mar 2026"
-  //   location: "City Name",
-  //   images:   [ BASE + "22.jpg" ]    // add more URLs for multi-photo
+  //   title:    "Ganesh Temple",
+  //   date:     "25 Mar 2026",
+  //   location: "Virar",
+  //   images:   [ BASE + "22.jpg", BASE + "22a.jpg", BASE + "22b.jpg", BASE + "22c.jpg" ]
+  // },
+  // {
+  //   title:    "Shiva Temple",
+  //   date:     "25 Mar 2026",
+  //   location: "Virar",
+  //   images:   [ BASE + "23.jpg", BASE + "23a.jpg" ]
   // },
 ];
 
@@ -487,15 +555,45 @@ async function sha256(s) {
   return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join("");
 }
 
-/* ── THEME ── */
+/* ════════════════════════════════════════════════
+ ✦  THEME
+════════════════════════════════════════════════ */
 let night = false;
 function toggleNight() {
   night = !night;
   document.documentElement.toggleAttribute("data-night", night);
-  document.getElementById("pill-icon").textContent = night ? "🌙" : "☀️";
+  const icon = night ? "🌙" : "☀️";
+  document.getElementById("pill-icon-lock").textContent    = icon;
+  document.getElementById("pill-icon-gallery").textContent = icon;
 }
 
-/* ── PIN ── */
+/* ════════════════════════════════════════════════
+ ✦  FULLSCREEN
+════════════════════════════════════════════════ */
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+document.addEventListener("fullscreenchange", () => {
+  const isFs = !!document.fullscreenElement;
+  document.body.classList.toggle("is-fullscreen", isFs);
+  const btn = document.getElementById("btn-fullscreen");
+  btn.querySelector("i").replaceWith((() => {
+    const el = document.createElement("i");
+    el.setAttribute("data-lucide", isFs ? "minimize-2" : "maximize-2");
+    el.style.cssText = "width:16px;height:16px;";
+    return el;
+  })());
+  lucide.createIcons({ nodes: [btn] });
+});
+
+/* ════════════════════════════════════════════════
+ ✦  PIN
+════════════════════════════════════════════════ */
 let pin = "";
 function kp(n) { if(pin.length>=4) return; pin+=n; syncDots(); if(pin.length===4) setTimeout(verify,320); }
 function kd()  { pin=pin.slice(0,-1); syncDots(); }
@@ -503,7 +601,10 @@ function syncDots() { for(let i=0;i<4;i++) document.getElementById("d"+i).classL
 async function verify() {
   if (await sha256(pin) === PASS_HASH) {
     document.getElementById("overlay").classList.add("bye");
-    setTimeout(()=>document.getElementById("overlay").style.display="none",700);
+    setTimeout(() => {
+      document.getElementById("overlay").style.display = "none";
+      document.getElementById("side-actions").classList.add("visible");
+    }, 700);
   } else {
     const e=document.getElementById("err"); e.style.opacity="1";
     document.getElementById("lock-card").animate([
@@ -516,13 +617,16 @@ async function verify() {
 }
 
 /* ════════════════════════════════════════════════
- ✦  AUTO-GROUP: merge entries with same date+location
-    The first entry's title is used as the card title.
+ ✦  AUTO-GROUP
+    KEY = title + date + location
+    → Different titles on same date+location = separate cards
+    → Same title on same date+location = merged (images combined)
 ════════════════════════════════════════════════ */
 function autoGroup(photos) {
   const map = new Map();
   photos.forEach(p => {
-    const key = (p.date||"") + "|" + (p.location||"");
+    // ✅ FIX: include title in key so different-titled entries stay separate
+    const key = (p.title||"") + "|" + (p.date||"") + "|" + (p.location||"");
     if (map.has(key)) {
       map.get(key).images.push(...p.images);
     } else {
@@ -578,7 +682,6 @@ function applyFilters() {
     if(show) visible++;
   });
 
-  // hide timeline headers whose section is entirely filtered out
   document.querySelectorAll(".timeline-header").forEach(hdr=>{
     let el=hdr.nextElementSibling, anyVis=false;
     while(el&&!el.classList.contains("timeline-header")){
@@ -618,6 +721,7 @@ const layout=[
 
 let PHOTOS_SORTED=[];
 
+/* Timeline header groups by date+location (visual grouping only) */
 function buildGallery() {
   PHOTOS_SORTED = sortPhotos(autoGroup(PHOTOS));
   buildFilters(PHOTOS_SORTED);
@@ -625,13 +729,14 @@ function buildGallery() {
   const galleryEl=document.getElementById("gallery");
   document.getElementById("gallery-loader")?.remove();
 
-  let layoutIdx=0, lastDayKey="";
+  let layoutIdx=0, lastDateLocKey="";
 
   PHOTOS_SORTED.forEach((p,gi)=>{
-    const dayKey=(p.date||"undated")+"|"+(p.location||"");
+    // Timeline headers group by date+location for visual separation
+    const dateLocKey=(p.date||"undated")+"|"+(p.location||"");
 
-    if(dayKey!==lastDayKey){
-      lastDayKey=dayKey;
+    if(dateLocKey!==lastDateLocKey){
+      lastDateLocKey=dateLocKey;
       const hdr=document.createElement("div");
       hdr.className="timeline-header reveal"; hdr._photo=p;
       hdr.innerHTML=`
@@ -795,13 +900,6 @@ function shiftImg(d){
     lbGroup=(lbGroup+d+PHOTOS_SORTED.length)%PHOTOS_SORTED.length;
     lbImgIdx=d>0?0:PHOTOS_SORTED[lbGroup].images.length-1;
   }
-  lbImgEl.classList.remove("on");lbCap.classList.remove("on");
-  setTimeout(loadLBImage,150);
-}
-function shiftLB(d){
-  resetZoom(false);
-  lbGroup=(lbGroup+d+PHOTOS_SORTED.length)%PHOTOS_SORTED.length;
-  lbImgIdx=0;
   lbImgEl.classList.remove("on");lbCap.classList.remove("on");
   setTimeout(loadLBImage,150);
 }
