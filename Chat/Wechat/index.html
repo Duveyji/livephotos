@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appwrite Chat Board</title>
+    <style>
+        /* Modern styling for your chat app */
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 600px; 
+            margin: auto; 
+            background-color: #f7f9fc; 
+            color: #333;
+        }
+        h2 { color: #f02e65; text-align: center; }
+        
+        #messages { 
+            border: 1px solid #e1e4e8; 
+            height: 450px; 
+            overflow-y: auto; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            background: #ffffff; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .msg { 
+            margin-bottom: 15px; 
+            padding: 12px; 
+            border-radius: 10px; 
+            background: #f1f0f0; 
+            border-left: 5px solid #f02e65;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-label { font-weight: bold; color: #f02e65; font-size: 0.9em; }
+        .text-content { display: block; margin-top: 5px; font-size: 1.05em; }
+        .time-stamp { font-size: 0.75em; color: #999; display: block; margin-top: 8px; text-align: right; }
+
+        .input-area { display: flex; flex-direction: column; gap: 10px; }
+        input { 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 14px;
+            outline: none;
+        }
+        input:focus { border-color: #f02e65; }
+        
+        button { 
+            padding: 14px; 
+            cursor: pointer; 
+            background: #f02e65; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #d6265a; }
+    </style>
+</head>
+<body>
+
+    <h2>ChatDB Live Board</h2>
+    
+    <div id="messages">
+        <p style="text-align:center; color:gray;">Connecting to Appwrite...</p>
+    </div> 
+    
+    <div class="input-area">
+        <input type="number" id="userInput" placeholder="Your Numeric ID (e.g. 101)">
+        <input type="text" id="msgInput" placeholder="Write your message...">
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+
+    <script>
+        // Initialize Appwrite
+        const { Client, Databases, ID } = Appwrite;
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1') 
+            .setProject('project-nyc-699ef71f0038c4e2c489'); // Your Project ID
+
+        const databases = new Databases(client);
+        const DATABASE_ID = '699ef79e002e77436190'; // Your Database ID
+        const COLLECTION_ID = 'messages'; // Your Table ID
+
+        // Function to render a single message to the screen
+        function renderMessage(doc) {
+            const msgDiv = document.getElementById('messages');
+            
+            // Format the timestamp (sentTime) nicely
+            let displayTime = "Just now";
+            if (doc.sentTime) {
+                const date = new Date(doc.sentTime);
+                displayTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            const messageHTML = `
+                <div class="msg">
+                    <span class="user-label">User ID: ${doc.senderId}</span>
+                    <span class="text-content">${doc.content}</span>
+                    <span class="time-stamp">${displayTime}</span>
+                </div>
+            `;
+            
+            msgDiv.innerHTML += messageHTML;
+            msgDiv.scrollTop = msgDiv.scrollHeight; // Auto-scroll to latest
+        }
+
+        // Send data to Appwrite
+        window.sendMessage = async () => {
+            const userId = document.getElementById('userInput').value;
+            const text = document.getElementById('msgInput').value;
+            const now = new Date().toISOString(); // Matches 'datetime' format in Appwrite
+
+            if(userId && text) {
+                try {
+                    await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
+                        senderId: parseInt(userId), // Converting string input to integer
+                        content: text,
+                        sentTime: now
+                    });
+                    document.getElementById('msgInput').value = ""; // Clear box
+                } catch (error) {
+                    console.error("Appwrite Error:", error);
+                    alert("Failed to send. Ensure your Name/ID is a NUMBER and Permissions are set to 'Any' in Settings.");
+                }
+            } else {
+                alert("Please fill in both boxes!");
+            }
+        };
+
+        // Real-time synchronization
+        client.subscribe(`databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`, response => {
+            // This triggers 'at the same time' for everyone
+            if (response.events.includes("databases.*.collections.*.documents.*.create")) {
+                renderMessage(response.payload);
+            }
+        });
+
+        // Load existing messages when the page opens
+        async function loadHistory() {
+            try {
+                const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID);
+                const msgDiv = document.getElementById('messages');
+                msgDiv.innerHTML = ""; // Clear the 'Connecting...' text
+                
+                if (response.documents.length === 0) {
+                    msgDiv.innerHTML = '<p style="text-align:center; color:gray;">No messages yet. Be the first!</p>';
+                } else {
+                    response.documents.forEach(renderMessage);
+                }
+            } catch (error) {
+                document.getElementById('messages').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>
