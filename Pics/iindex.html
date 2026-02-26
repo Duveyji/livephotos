@@ -168,49 +168,31 @@
     .g-img-wrap:hover .g-nav { opacity: 1; }
     .img-count-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.55); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 99px; display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px); pointer-events: none; }
 
-    /* ══ CAPTION + DESCRIPTION ══ */
+    /* ══ CAPTION ══ */
     .g-caption { margin-top: 14px; }
     .g-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--text); }
     .g-loc   { font-size: 10px; color: var(--text-2); letter-spacing: 0.14em; margin-top: 3px; text-transform: uppercase; }
     .g-date  { font-size: 10px; color: var(--text-3); letter-spacing: 0.1em; margin-top: 2px; }
 
-    /* ✨ Description note */
-    .g-desc {
-      margin-top: 10px;
-      font-size: 12px;
-      line-height: 1.7;
-      color: var(--text-2);
-      font-style: italic;
-      border-left: 2px solid rgba(232,82,106,0.3);
-      padding-left: 10px;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      transition: color 0.3s;
-    }
-    .g-desc.expanded {
-      -webkit-line-clamp: unset;
-      display: block;
-    }
-    .g-item:hover .g-desc { color: var(--text); }
-
-    .g-desc-toggle {
-      display: none;
-      margin-top: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--rose);
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      font-family: 'DM Sans', sans-serif;
-      transition: opacity 0.2s;
-    }
-    .g-desc-toggle:hover { opacity: 0.7; }
+    /* ══ NOTE SECTION ══ */
+    .g-note-section { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .g-note-label { font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+    .g-note-label .note-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rose); flex-shrink: 0; }
+    .g-note-skeleton { height: 36px; border-radius: 10px; background: linear-gradient(90deg, var(--key-bg) 25%, var(--border) 50%, var(--key-bg) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    .g-note-textarea { width: 100%; min-height: 70px; resize: none; border-radius: 12px; border: 1px solid var(--border); background: var(--key-bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; line-height: 1.65; padding: 10px 12px; outline: none; display: block; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+    .g-note-textarea::placeholder { color: var(--text-3); font-style: italic; }
+    .g-note-textarea:focus { border-color: var(--rose); background: var(--surface); box-shadow: 0 0 0 3px rgba(232,82,106,0.08); }
+    .g-note-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; gap: 8px; }
+    .g-note-status { font-size: 10px; color: var(--text-3); font-style: italic; transition: color 0.3s; flex: 1; }
+    .g-note-status.saved  { color: #5cb85c; }
+    .g-note-status.saving { color: var(--rose); }
+    .g-note-status.error  { color: #d9534f; }
+    .g-note-save { padding: 6px 16px; border-radius: 99px; border: 1px solid var(--rose); background: transparent; color: var(--rose); font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+    .g-note-save:hover    { background: var(--rose); color: #fff; }
+    .g-note-save:active   { transform: scale(0.95); }
+    .g-note-save:disabled { opacity: 0.4; pointer-events: none; }
+    .g-note-char { font-size: 10px; color: var(--text-3); flex-shrink: 0; }
 
     .g-item { transition: opacity 0.35s, transform 0.35s; }
     .g-item.filtered-out { opacity: 0; pointer-events: none; transform: scale(0.97); height: 0; overflow: hidden; margin: 0 !important; padding: 0; }
@@ -244,21 +226,9 @@
     #lb-loc   { font-size:10px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--rose); margin-bottom:4px; }
     #lb-title { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--text); }
     #lb-date  { font-size:11px; color:var(--text-2); margin-top:4px; }
-
-    /* ✨ Description in lightbox */
-    #lb-desc {
-      margin-top: 12px;
-      font-size: 12.5px;
-      line-height: 1.75;
-      color: var(--text-2);
-      font-style: italic;
-      background: var(--rose-dim);
-      border-radius: 10px;
-      padding: 10px 14px;
-      text-align: left;
-      display: none;
-    }
-
+    #lb-note  { margin-top:10px; font-size:12px; line-height:1.7; color:var(--text-2); background:rgba(0,0,0,0.04); border-radius:10px; padding:10px 14px; text-align:left; display:none; border:1px solid var(--border); }
+    [data-night] #lb-note { background:rgba(255,255,255,0.04); }
+    #lb-note::before { content:"📝 "; font-style:normal; }
     #zoom-badge { position:absolute; top:14px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.45); color:#fff; font-size:11px; font-weight:600; padding:3px 12px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity 0.3s; }
     #zoom-badge.show { opacity:1; }
     .lb-btn { position:absolute; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); cursor:pointer; transition:all 0.2s; color:var(--text); box-shadow:0 4px 14px var(--shadow); z-index:10; }
@@ -364,7 +334,7 @@
       <p id="lb-loc"></p>
       <h3 id="lb-title"></h3>
       <p id="lb-date"></p>
-      <p id="lb-desc"></p>
+      <p id="lb-note"></p>
     </div>
     <button class="lb-btn" id="lb-prev" onclick="shiftImg(-1)"><i data-lucide="arrow-left" style="width:18px;height:18px;"></i></button>
     <button class="lb-btn" id="lb-next" onclick="shiftImg(1)"><i data-lucide="arrow-right" style="width:18px;height:18px;"></i></button>
@@ -372,118 +342,95 @@
 
 <script>
 /* ════════════════════════════════════════════════════════
- ✦  PHOTOS — ADD YOUR ENTRIES HERE
- ────────────────────────────────────────────────────────
- FIELDS:
-   title    – Caption shown on card & lightbox
-   date     – e.g. "05 Dec 2025"
-   location – City / place name (used in filter)
-   desc     – ✨ SHORT MEMORY NOTE (optional)
-              A few lines about what happened — a funny
-              moment, how you felt, a little story.
-              Shows on the card (clamped to 3 lines with
-              a "read more" toggle) and in full inside
-              the lightbox with a soft pink background.
-   images   – Array of image URLs
+ ✦  GOOGLE SHEETS CONNECTION
  ════════════════════════════════════════════════════════ */
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzcMsTWl5RnDagDYodpmCxgcO2vevwwsRQcxjJVfqgqLu8lKrC5j9_bbo2_Dt8VcXLs2g/exec";
 
+/* ════════════════════════════════════════════════════════
+ ✦  PHOTOS  (no desc field)
+ ════════════════════════════════════════════════════════ */
 const BASE = "https://raw.githubusercontent.com/Duveyji/livephotos/main/Pics/";
 
 const PHOTOS = [
   // ── DEC 2025 ──────────────────────────────────────────
-  {
-    title:    "The First Meeting",
-    date:     "05 Dec 2025",
-    location: "Nalasopara",
-    desc:     "The day everything started. We were both so nervous but it felt so natural the moment we sat down together. I kept sneaking glances and hoping you wouldn't notice. You did. ❤️",
-    images:   [ BASE + "1.jpg" ]
-  },
-  {
-    title:    "The Jivdani Temple",
-    date:     "24 Dec 2025",
-    location: "Virar",
-    desc:     "At the temple — we climbed all those steps and you held my hand on the way down. The view from the top was stunning, but I wasn't really looking at the view.",
-    images:   [ BASE + "2.jpg" ]
-  },
+  { title: "The First Meeting",      date: "05 Dec 2025", location: "Nalasopara", images: [ BASE+"1.jpg" ] },
+  { title: "The Jivdani Temple",     date: "24 Dec 2025", location: "Virar",      images: [ BASE+"2.jpg" ] },
 
   // ── JAN 2026 ──────────────────────────────────────────
-  {
-    title:    "Dwarkadhish Mandir – Virar",
-    date:     "23 Jan 2026",
-    location: "Virar",
-    desc:     "We prayed together for the first time. There's something so quiet and beautiful about sharing that with someone.",
-    images:   [ BASE + "15.jpg", BASE + "15a.jpg", BASE + "15b.jpg" ]
-  },
-  {
-    title:    "The Jivdani Temple",
-    date:     "23 Jan 2026",
-    location: "Virar",
-    desc:     "Back again — this place already feels like ours.",
-    images:   [ BASE + "15c.jpg" ]
-  },
-  {
-    title:    "Domino's Pizza in Virar",
-    date:     "24 Jan 2026",
-    location: "Virar",
-    desc:     "We argued over toppings for ten minutes and ordered the same thing we always do anyway. Laughed the whole time.",
-    images:   [ BASE + "16.jpg", BASE + "16a.jpg" ]
-  },
-  {
-    title:    "Miraj Dattani - Movie",
-    date:     "26 Jan 2026",
-    location: "Vasai",
-    desc:     "Looking back at the movie, the Beauty and the Beast element was definitely the highlight of the entire Border 2 experience. 😄",
-    images:   [ BASE + "11.jpeg", BASE + "11a.jpeg" ]
-  },
-  {
-    title:    "The Jivdani Temple",
-    date:     "29 Jan 2026",
-    location: "Virar",
-    desc:     "Third visit and it never gets old. We took the best photos here — you were glowing.",
-    images:   [ BASE + "17.jpeg", BASE + "17a.jpg", BASE + "17b.jpg" ]
-  },
-  {
-    title:    "Hall Ticket",
-    date:     "14 Feb 2026",
-    location: "Palghar",
-    desc:     "Valentine's Day, and we spent it sorting exam papers. Peak romance. Still the best Valentine's I've had. 💌",
-    images:   [ BASE + "18.jpg", BASE + "18a.jpg" ]
-  },
-  {
-    title:    "Deep Education Campus",
-    date:     "18 Feb 2026",
-    location: "Boisar",
-    desc:     "Walking through campus together before exams. The world felt huge and I felt calm because you were there.",
-    images:   [ BASE + "19.jpg", BASE + "19a.jpg" ]
-  },
-  {
-    title:    "No Touch Day",
-    date:     "20 Feb 2026",
-    location: "Boisar",
-    desc:     "We made up a silly rule and broke it about four times. Worth it every single time.",
-    images:   [ BASE + "20.jpg", BASE + "20a.jpg", BASE + "20b.jpg", BASE + "20c.jpg" ]
-  },
-  {
-    title:    "Last Day of Exam",
-    date:     "21 Feb 2026",
-    location: "Boisar",
-    desc:     "Finally done. We walked out and just stood in the sun for a moment. Relief, happiness, and us — a perfect combination.",
-    images:   [ BASE + "21.jpg", BASE + "21a.jpg" ]
-  },
-
-  // ── ADD NEW ENTRIES BELOW ──────────────────────────────
-  // {
-  //   title:    "Sunset Walk",
-  //   date:     "01 Mar 2026",
-  //   location: "Virar",
-  //   desc:     "Write your little memory note here…",
-  //   images:   [ BASE + "22.jpg" ]
-  // },
+  { title: "Dwarkadhish Mandir – Virar", date: "23 Jan 2026", location: "Virar",  images: [ BASE+"15.jpg", BASE+"15a.jpg", BASE+"15b.jpg" ] },
+  { title: "The Jivdani Temple",         date: "23 Jan 2026", location: "Virar",  images: [ BASE+"15c.jpg" ] },
+  { title: "Domino's Pizza in Virar",    date: "24 Jan 2026", location: "Virar",  images: [ BASE+"16.jpg", BASE+"16a.jpg" ] },
+  { title: "Miraj Dattani - Movie",      date: "26 Jan 2026", location: "Vasai",  images: [ BASE+"11.jpeg", BASE+"11a.jpeg" ] },
+  { title: "The Jivdani Temple",         date: "29 Jan 2026", location: "Virar",  images: [ BASE+"17.jpeg", BASE+"17a.jpg", BASE+"17b.jpg" ] },
+  { title: "Hall Ticket",                date: "14 Feb 2026", location: "Palghar",images: [ BASE+"18.jpg", BASE+"18a.jpg" ] },
+  { title: "Deep Education Campus",      date: "18 Feb 2026", location: "Boisar", images: [ BASE+"19.jpg", BASE+"19a.jpg" ] },
+  { title: "No Touch Day",               date: "20 Feb 2026", location: "Boisar", images: [ BASE+"20.jpg", BASE+"20a.jpg", BASE+"20b.jpg", BASE+"20c.jpg" ] },
+  { title: "Last Day of Exam",           date: "21 Feb 2026", location: "Boisar", images: [ BASE+"21.jpg", BASE+"21a.jpg" ] },
 ];
 
-/* ════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
+ ✦  NOTE KEY HELPER
+ ════════════════════════════════════════════════════════ */
+function noteKey(p) { return `${p.title}|${p.date}|${p.location}`; }
+
+/* ════════════════════════════════════════════════════════
+ ✦  NOTES CACHE
+ ════════════════════════════════════════════════════════ */
+let notesCache = {};
+
+async function loadNotes() {
+  try {
+    const res  = await fetch(SHEET_URL);
+    const json = await res.json();
+    if (json.success) {
+      notesCache = json.notes || {};
+      document.querySelectorAll(".g-note-textarea").forEach(ta => {
+        const gi  = +ta.dataset.gi;
+        const val = notesCache[noteKey(PHOTOS_SORTED[gi])] || "";
+        ta.value = val;
+        updateCharCount(gi, val.length);
+        document.getElementById(`note-skel-${gi}`).style.display = "none";
+        ta.style.display = "block";
+        ta.closest(".g-note-section").querySelector(".g-note-footer").style.display = "flex";
+      });
+    }
+  } catch(e) { console.warn("Could not load notes:", e); }
+}
+
+async function saveNote(gi) {
+  const p      = PHOTOS_SORTED[gi];
+  const key    = noteKey(p);
+  const ta     = document.querySelector(`.g-note-textarea[data-gi="${gi}"]`);
+  const status = document.getElementById(`note-status-${gi}`);
+  const btn    = document.getElementById(`note-save-btn-${gi}`);
+  const note   = ta.value.trim();
+  btn.disabled = true;
+  status.textContent = "Saving…"; status.className = "g-note-status saving";
+  try {
+    const res  = await fetch(SHEET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ key, note, title: p.title, date: p.date, location: p.location })
+    });
+    const json = await res.json();
+    if (json.success) {
+      notesCache[key] = note;
+      status.textContent = "✓ Saved"; status.className = "g-note-status saved";
+      setTimeout(() => { status.textContent = ""; status.className = "g-note-status"; }, 2500);
+    } else { throw new Error(json.error || "Unknown error"); }
+  } catch(e) {
+    status.textContent = "⚠️ Error saving"; status.className = "g-note-status error";
+  } finally { btn.disabled = false; }
+}
+
+function updateCharCount(gi, len) {
+  const cc = document.getElementById(`note-char-${gi}`);
+  if (cc) cc.textContent = `${len}/280`;
+}
+
+/* ════════════════════════════════════════════════════════
  ✦  PASSCODE
-════════════════════════════════════════════ */
+ ════════════════════════════════════════════════════════ */
 const PASS_HASH = "78c72f67941a420cd4e5ee9fdabcaeaba6d72f16160915085f9802220fd83799";
 async function sha256(s) {
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
@@ -529,6 +476,7 @@ async function verify() {
     setTimeout(() => {
       document.getElementById("overlay").style.display = "none";
       document.getElementById("side-actions").classList.add("visible");
+      loadNotes();
     }, 700);
   } else {
     const e=document.getElementById("err"); e.style.opacity="1";
@@ -547,7 +495,7 @@ function autoGroup(photos) {
   photos.forEach(p => {
     const key = (p.title||"") + "|" + (p.date||"") + "|" + (p.location||"");
     if (map.has(key)) { map.get(key).images.push(...p.images); }
-    else { map.set(key, { title: p.title, date: p.date, location: p.location, desc: p.desc||"", images: [...p.images] }); }
+    else { map.set(key, { title: p.title, date: p.date, location: p.location, images: [...p.images] }); }
   });
   return [...map.values()];
 }
@@ -638,12 +586,6 @@ function buildGallery() {
       ?`<button class="g-nav prev" onclick="cardPrev(event,${gi})"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
         <button class="g-nav next" onclick="cardNext(event,${gi})"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>`:"";
 
-    // ✨ desc block
-    const descHtml = p.desc
-      ? `<p class="g-desc" id="desc-${gi}">${p.desc}</p>
-         <button class="g-desc-toggle" id="dtog-${gi}" onclick="toggleDesc(event,${gi})">Read more ↓</button>`
-      : "";
-
     el.innerHTML=`
       <div class="g-img-wrap" onclick="cardClick(event,${gi})">
         <div class="g-img-inner" style="padding-top:${pt};" data-gi="${gi}" data-cur="0">
@@ -656,29 +598,28 @@ function buildGallery() {
         <div class="g-title">${p.title}</div>
         ${p.location?`<div class="g-loc">${p.location}</div>`:""}
         ${p.date?`<div class="g-date">${p.date}${count>1?" &nbsp;·&nbsp; "+count+" photos":""}</div>`:""}
-        ${descHtml}
+        <div class="g-note-section">
+          <div class="g-note-label"><span class="note-dot"></span> Memory Note</div>
+          <div class="g-note-skeleton" id="note-skel-${gi}"></div>
+          <textarea class="g-note-textarea" id="note-ta-${gi}" data-gi="${gi}"
+            placeholder="Write a note about this moment… 💌"
+            maxlength="280" rows="3" style="display:none;"
+            oninput="updateCharCount(${gi}, this.value.length)"
+            onkeydown="if(event.ctrlKey&&event.key==='Enter') saveNote(${gi})"></textarea>
+          <div class="g-note-footer" style="display:none;">
+            <span class="g-note-status" id="note-status-${gi}"></span>
+            <span class="g-note-char" id="note-char-${gi}">0/280</span>
+            <button class="g-note-save" id="note-save-btn-${gi}" onclick="saveNote(${gi})">
+              <i data-lucide="save" style="width:11px;height:11px;"></i> Save
+            </button>
+          </div>
+        </div>
       </div>`;
     galleryEl.insertBefore(el,document.getElementById("no-results"));
   });
 
-  // Show "read more" only if text is actually overflowing
-  requestAnimationFrame(() => {
-    PHOTOS_SORTED.forEach((_,gi) => {
-      const d=document.getElementById(`desc-${gi}`);
-      const t=document.getElementById(`dtog-${gi}`);
-      if (d && t && d.scrollHeight > d.clientHeight + 4) t.style.display="inline-block";
-    });
-  });
-
   document.querySelectorAll(".reveal:not(.active)").forEach(el=>io.observe(el));
   lucide.createIcons();
-}
-
-function toggleDesc(e, gi) {
-  e.stopPropagation();
-  const d=document.getElementById(`desc-${gi}`), t=document.getElementById(`dtog-${gi}`);
-  const expanded=d.classList.toggle("expanded");
-  t.textContent = expanded ? "Show less ↑" : "Read more ↓";
 }
 
 /* ════════════ CARD NAV ════════════ */
@@ -686,9 +627,12 @@ function getInner(gi){ return document.querySelector(`.g-img-inner[data-gi="${gi
 function setCardImg(gi,idx){ const inner=getInner(gi); if(!inner) return; inner.dataset.cur=idx; inner.querySelector(".g-img").src=PHOTOS_SORTED[gi].images[idx]; inner.querySelectorAll(".g-dot").forEach((d,i)=>d.classList.toggle("cur",i===idx)); }
 function cardPrev(e,gi){ e.stopPropagation(); const inner=getInner(gi); const cur=+inner.dataset.cur,len=PHOTOS_SORTED[gi].images.length; setCardImg(gi,(cur-1+len)%len); }
 function cardNext(e,gi){ e.stopPropagation(); const inner=getInner(gi); const cur=+inner.dataset.cur,len=PHOTOS_SORTED[gi].images.length; setCardImg(gi,(cur+1)%len); }
-function cardClick(e,gi){ const inner=getInner(gi); openLB(gi,+inner.dataset.cur); }
+function cardClick(e,gi){
+  if (e.target.closest(".g-note-section")) return;
+  const inner=getInner(gi); openLB(gi,+inner.dataset.cur);
+}
 
-/* ════════════ LIGHTBOX + PINCH/PAN/SWIPE ════════════ */
+/* ════════════ LIGHTBOX ════════════ */
 let lbGroup=0,lbImgIdx=0;
 const lb=document.getElementById("lightbox"),lbImgEl=document.getElementById("lb-img"),lbCap=document.getElementById("lb-caption"),zoomBadge=document.getElementById("zoom-badge");
 let scale=1,minScale=1,maxScale=5,tx=0,ty=0,startTx=0,startTy=0,pinching=false,initDist=0,initScale=1,dragging=false,dragStartX=0,dragStartY=0,swipeStartX=0,lastTap=0,badgeTimer=null;
@@ -713,10 +657,10 @@ function loadLBImage(){
   document.getElementById("lb-title").textContent=p.title;
   const tot=p.images.length;
   document.getElementById("lb-date").textContent=tot>1?`${p.date}  ·  ${lbImgIdx+1} / ${tot}`:(p.date||"");
-  // ✨ description in lightbox
-  const lbDescEl=document.getElementById("lb-desc");
-  if(p.desc){ lbDescEl.textContent=p.desc; lbDescEl.style.display="block"; }
-  else { lbDescEl.style.display="none"; }
+  const lbNoteEl=document.getElementById("lb-note");
+  const savedNote=notesCache[noteKey(p)]||"";
+  if(savedNote){lbNoteEl.textContent=savedNote;lbNoteEl.style.display="block";}
+  else{lbNoteEl.style.display="none";}
 }
 function closeLB(){ lbImgEl.classList.remove("on");lbCap.classList.remove("on");setTimeout(()=>{lb.classList.remove("open");resetZoom(false);},350); }
 function shiftImg(d){ resetZoom(false);const next=lbImgIdx+d;if(next>=0&&next<PHOTOS_SORTED[lbGroup].images.length){lbImgIdx=next;}else{lbGroup=(lbGroup+d+PHOTOS_SORTED.length)%PHOTOS_SORTED.length;lbImgIdx=d>0?0:PHOTOS_SORTED[lbGroup].images.length-1;}lbImgEl.classList.remove("on");lbCap.classList.remove("on");setTimeout(loadLBImage,150); }
