@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubey Ji's Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #FFD700;
+    --orange: #FF6B00;
+    --red: #FF2D55;
+    --cyan: #00F5FF;
+    --bg: #080810;
+    --card-bg: #0d0d1a;
+    --glow-gold: 0 0 20px rgba(255,215,0,0.6), 0 0 60px rgba(255,215,0,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 16px; height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: screen;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.2s, height 0.2s;
+    box-shadow: var(--glow-gold);
+  }
+  .cursor-trail {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(255,215,0,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: left 0.12s ease, top 0.12s ease;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,215,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,215,0,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scanlines */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+    animation: scanMove 8s linear infinite;
+  }
+  @keyframes scanMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+  }
+
+  /* Canvas for particles */
+  #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  /* ============ HEADER ============ */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 60px 20px 30px;
+    text-align: center;
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
+    padding: 6px 18px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    animation: badgePulse 3s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(0,245,255,0.3);
+  }
+  @keyframes badgePulse {
+    0%,100% { box-shadow: 0 0 12px rgba(0,245,255,0.3); }
+    50% { box-shadow: 0 0 28px rgba(0,245,255,0.7); }
+  }
+
+  h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1.4rem, 4vw, 2.6rem);
+    line-height: 1.4;
+    background: linear-gradient(180deg, #fff 0%, var(--gold) 50%, var(--orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(255,215,0,0.5));
+    animation: titleFlicker 6s ease-in-out infinite;
+  }
+  @keyframes titleFlicker {
+    0%,94%,96%,98%,100% { opacity: 1; }
+    95%,97% { opacity: 0.85; }
+  }
+
+  .subtitle {
+    margin-top: 16px;
+    color: rgba(255,255,255,0.5);
+    font-size: 1rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .coin-row {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: var(--gold);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    animation: coinBlink 1.2s step-end infinite;
+  }
+  @keyframes coinBlink { 0%,100% { opacity:1 } 50% { opacity:0 } }
+
+  /* ============ CONTAINER ============ */
+  .container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 50px 20px 60px;
+    flex-wrap: wrap;
+  }
+
+  /* ============ GAME CARDS ============ */
+  .game-card {
+    position: relative;
+    width: 280px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 4px;
+    padding: 0;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s;
+    animation: cardIn 0.7s ease both;
+  }
+  .game-card:nth-child(1) { animation-delay: 0.1s; }
+  .game-card:nth-child(2) { animation-delay: 0.25s; }
+  .game-card:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .game-card:hover {
+    transform: translateY(-14px) scale(1.03);
+    border-color: var(--gold);
+  }
+  .game-card:hover .card-glow { opacity: 1; }
+  .game-card:hover .card-icon { transform: scale(1.15) rotate(-5deg); }
+  .game-card:hover .btn { background-position: right center; }
+
+  /* Corner accents */
+  .game-card::before, .game-card::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border-color: var(--gold);
+    border-style: solid;
+    z-index: 5;
+    transition: width 0.3s, height 0.3s;
+  }
+  .game-card::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+  .game-card::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+  .game-card:hover::before, .game-card:hover::after { width: 22px; height: 22px; }
+
+  /* Glow overlay on hover */
+  .card-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.08) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+
+  /* Card number badge */
+  .card-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: rgba(255,215,0,0.35);
+    position: absolute;
+    top: 12px;
+    right: 16px;
+  }
+
+  /* Icon area */
+  .card-icon-wrap {
+    background: linear-gradient(135deg, #13131f, #1a1a2e);
+    padding: 32px 20px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,215,0,0.1);
+  }
+  .card-icon {
+    font-size: 3.2rem;
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    filter: drop-shadow(0 0 16px rgba(255,215,0,0.4));
+  }
+
+  /* Card body */
+  .card-body {
+    padding: 22px 22px 28px;
+    text-align: left;
+  }
+  .card-tag {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .game-card h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .game-card p {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    font-weight: 400;
+    margin-bottom: 22px;
+  }
+
+  /* Stat bar */
+  .stat-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .stat {
+    flex: 1;
+  }
+  .stat-label {
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    display: block;
+    margin-bottom: 5px;
+  }
+  .stat-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .stat-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--orange));
+    transition: width 1s ease 0.5s;
+    width: 0;
+  }
+  .game-card.visible .stat-fill { width: var(--fill); }
+
+  /* Button */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 18px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,107,0,0.08));
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid rgba(255,215,0,0.4);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn:hover::before { opacity: 1; }
+  .btn:hover { color: #000; border-color: var(--gold); box-shadow: var(--glow-gold); }
+  .btn span, .btn-arrow { position: relative; z-index: 1; }
+  .btn-arrow { font-size: 0.8rem; transition: transform 0.3s; }
+  .btn:hover .btn-arrow { transform: translateX(4px); }
+
+  /* ============ DIVIDER ============ */
+  .divider {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 0 20px;
+    margin-top: -20px;
+  }
+  .divider-line {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .divider-line::before, .divider-line::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+  }
+  .divider-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.45rem;
+    color: rgba(255,215,0,0.4);
+    letter-spacing: 3px;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    position: relative;
+    z-index: 10;
+    padding: 40px 20px 30px;
+    text-align: center;
+  }
+  .footer-score {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: rgba(255,215,0,0.2);
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+  }
+  .footer-copy {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 2px;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 640px) {
+    h1 { font-size: 1.1rem; }
+    .game-card { width: 92%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+<canvas id="stars"></canvas>
+
+<header>
+  <div class="header-badge">● INSERT COIN ●</div>
+  <h1>DUBEY JI'S<br>ARCADE</h1>
+  <p class="subtitle">Choose Your Game</p>
+  <div class="coin-row">▼ &nbsp; PRESS START &nbsp; ▼</div>
+</header>
+
+<div class="container">
+
+  <!-- Card 1 -->
+  <div class="game-card" data-index="0">
+    <div class="card-glow"></div>
+    <span class="card-num">01</span>
+    <div class="card-icon-wrap">
+      <span class="card-icon">🐍</span>
+    </div>
+    <div class="card-body">
+      <span class="card-tag">Board Game</span>
+      <h2>SAANP<br>SEEDHI</h2>
+      <p>Classic Snakes & Ladders — climb the ladders, dodge the serpents.</p>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-label">Fun</span>
+          <div class="stat-bar"><div class="stat-fill" style="--fill: 90%"></div></div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Luck</span>
+          <div class="stat-bar"><div class="stat-fill" style="--fill: 95%"></div></div>
+        </div>
+      </div>
+      <a href="https://duveyji.github.io/livephotos/" class="btn">
+        <span>PLAY NOW</span>
+        <span class="btn-arrow">▶</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card 2 -->
+  <div class="game-card" data-index="1">
+    <div class="card-glow"></div>
+    <span class="card-num">02</span>
+    <div class="card-icon-wrap">
+      <span class="card-icon">⚔️</span>
+    </div>
+    <div class="card-body">
+      <span class="card-tag">PvP Battle</span>
+      <h2>DIVINE<br>BATTLE</h2>
+      <p>Shubham vs Shivani — the ultimate mythic showdown begins.</p>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-label">Intensity</span>
+          <div class="stat-bar"><div class="stat-fill" style="--fill: 100%"></div></div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Hype</span>
+          <div class="stat-bar"><div class="stat-fill" style="--fill: 85%"></div></div>
+        </div>
+      </div>
+      <a href="https://duveyji.github.io/livephotos/Vid/index.html" class="btn">
+        <span>START BATTLE</span>
+        <span class="btn-arrow">▶</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Card 3 -->
+  <div class="game-card" data-index="2">
+    <div class="card-glow"></div>
+    <span class="card-num">03</span>
+    <div class="card-icon-wrap">
+      <span class="card-icon">🎡</span>
+    </div>
+    <div class="card-body">
+      <span class="card-tag">Fortune</span>
+      <h2>LUCKY<br>WHEEL</h2>
+      <p>Spin the wheel and let destiny decide your fate. Are you bold enough?</p>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-label">Thrill</span>
+          <div class="stat-bar"><div class="stat-fill" style="--fill: 88%"></div></div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Reward</span>
+          <div class="stat-bar"><div class="stat-fill" style="--fill: 75%"></div></div>
+        </div>
+      </div>
+      <a href="https://duveyji.github.io/livephotos/Vid/lindex.html" class="btn">
+        <span>SPIN NOW</span>
+        <span class="btn-arrow">▶</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="divider">
+  <div class="divider-line">
+    <span class="divider-text">✦ HIGH SCORES ✦ GLORY ✦ LEGENDS ✦</span>
+  </div>
+</div>
+
+<footer>
+  <p class="footer-score">PLAYER 1 — ENTER YOUR NAME</p>
+  <p class="footer-copy">© 2026 Dubey Ji's Arcade · Made with ❤️</p>
+</footer>
+
+<script>
+  // ─── Custom Cursor ───────────────────────────────────────
+  const cursor = document.getElementById('cursor');
+  const trail  = document.getElementById('cursorTrail');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+    setTimeout(() => {
+      trail.style.left = e.clientX + 'px';
+      trail.style.top  = e.clientY + 'px';
+    }, 80);
+  });
+  document.querySelectorAll('a, .game-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = cursor.style.height = '28px';
+      cursor.style.background = 'var(--orange)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = cursor.style.height = '16px';
+      cursor.style.background = 'var(--gold)';
+    });
+  });
+
+  // ─── Star Canvas ─────────────────────────────────────────
+  const canvas = document.getElementById('stars');
+  const ctx    = canvas.getContext('2d');
+  let W, H, stars = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function mkStar() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.4 + 0.3,
+      a: Math.random(),
+      da: (Math.random() - 0.5) * 0.004,
+      speed: Math.random() * 0.15 + 0.05
+    };
+  }
+  for (let i = 0; i < 160; i++) stars.push(mkStar());
+
+  (function drawStars() {
+    ctx.clearRect(0, 0, W, H);
+    stars.forEach(s => {
+      s.a = Math.max(0, Math.min(1, s.a + s.da));
+      if (s.a <= 0 || s.a >= 1) s.da *= -1;
+      s.y -= s.speed;
+      if (s.y < 0) { s.y = H; s.x = Math.random() * W; }
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,215,0,${s.a * 0.7})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  })();
+
+  // ─── Stat-bar reveal on scroll ───────────────────────────
+  const cards = document.querySelectorAll('.game-card');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.3 });
+  cards.forEach(c => io.observe(c));
+</script>
+</body>
+</html>
